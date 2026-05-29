@@ -1,0 +1,5 @@
+import './help.command'
+import './new.command'
+import './settings.command'
+import './start.command'
+import './stats.command'

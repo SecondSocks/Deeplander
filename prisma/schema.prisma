@@ -1,0 +1,207 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  telegramId   String        @unique @map("telegram_id")
+  username     String?
+  firstName    String?       @map("first_name")
+  lastName     String?       @map("last_name")
+  languageCode String?       @map("language_code")
+  status       UserStatus    @default(active)
+  settings     UserSettings?
+
+  chats            Chat[]
+  conversations    Conversation[]
+  aiRequestLogs    AiRequestLog[]
+  rateLimitWindows RateLimitWindow[]
+
+  @@index([telegramId])
+}
+
+model Chat {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  telegramChatId String   @unique @map("telegram_chat_id")
+  type           ChatType @default(private)
+  title          String?
+
+  owner   User   @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  ownerId String @map("owner_id")
+
+  conversations Conversation[]
+}
+
+model Conversation {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  title String?
+
+  defaultProvider String  @default("deepseek")
+  defaultModel    String  @default("deepseek-v4-flash")
+  isActive        Boolean @default(true)
+
+  systemPromptVersion Int @default(1)
+
+  summary String?
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String @map("user_id")
+
+  chat   Chat   @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  chatId String
+
+  messages      Message[]
+  aiRequestLogs AiRequestLog[]
+
+  @@index([userId])
+  @@index([chatId])
+}
+
+model Message {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  role    Role   @default(user)
+  content String
+
+  provider String?
+  model    String?
+
+  promptTokens     Int?
+  completionTokens Int?
+  totalTokens      Int?
+
+  latencyMs Int?
+
+  telegramMessageId Int?    @map("telegram_message_id")
+  isEdited          Boolean @default(false) @map("is_edited")
+
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  conversationId String
+
+  @@index([conversationId])
+  @@index([createdAt])
+}
+
+model AiRequestLog {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  provider     AiProvider
+  inputTokens  Int           @map("input_tokens")
+  outputTokens Int           @map("output_tokens")
+  latencyMs    Int           @map("latency_ms")
+  status       RequestStatus
+  errorCode    String?       @map("error_code")
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  conversationId String
+
+  @@index([userId])
+  @@index([conversationId])
+  @@index([createdAt])
+}
+
+model UserSettings {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  temperature   Float   @default(0.7)
+  responseMode  String  @map("response_mode")
+  language      String
+  memoryEnabled Boolean @default(false) @map("memory_enabled")
+  model         String  @default("deepseek-v4-flash")
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String @unique
+}
+
+model RateLimitWindow {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  key         String
+  count       Int
+  windowStart DateTime @map("window_start")
+  windowEnd   DateTime @map("window_end")
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+
+  @@index([userId, key, windowEnd])
+}
+
+model FeatureFlag {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  key            String  @unique
+  enabled        Boolean
+  rolloutPercent Int     @map("rollout_percent")
+}
+
+enum UserStatus {
+  active
+  blocked
+  pending
+}
+
+enum ConversationState {
+  idle
+  awaiting_ai
+  streaming
+  error
+}
+
+enum Role {
+  system
+  user
+  assistant
+  tool
+}
+
+enum ChatType {
+  private
+  group
+  supergroup
+  channel
+}
+
+enum AiProvider {
+  deepseek
+  mistral
+  qwen
+  openai
+  anthropic
+  gemini
+  custom
+}
+
+enum RequestStatus {
+  success
+  error
+  timeout
+  cancelled
+}
