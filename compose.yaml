@@ -1,0 +1,10 @@
+services:
+  bot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: tg-bot-deepseek
+    restart: unless-stopped
+    env_file:
+      - .env
+    init: true

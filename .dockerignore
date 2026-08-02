@@ -1,0 +1,12 @@
+.git
+.github
+.agents
+.codex
+node_modules
+src/generated/prisma
+.env*
+!*.env.example
+coverage
+dist
+logs
+*.log

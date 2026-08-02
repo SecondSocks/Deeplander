@@ -1,0 +1,13 @@
+services:
+  bot:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: tg-bot-deepseek-dev
+    env_file:
+      - .env
+    init: true
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: sh -c "bunx prisma generate && bun --watch index.ts"
