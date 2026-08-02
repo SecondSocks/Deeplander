@@ -10,6 +10,7 @@ RUN bun install --frozen-lockfile
 FROM base AS runtime
 
 ENV NODE_ENV=production
+ENV PORT=8080
 
 COPY --from=install /app/node_modules ./node_modules
 COPY package.json bun.lock prisma.config.ts ./
@@ -20,5 +21,7 @@ COPY prisma.service.ts ./prisma.service.ts
 
 # Generate the Prisma client during the deployment image build.
 RUN DIRECT_URL=postgresql://user:password@localhost:5432/database bunx prisma generate
+
+EXPOSE 8080
 
 CMD ["sh", "-c", "bunx prisma migrate deploy && bun run index.ts"]
