@@ -24,4 +24,4 @@ RUN DIRECT_URL=postgresql://user:password@localhost:5432/database bunx prisma ge
 
 EXPOSE 8080
 
-CMD ["sh", "-c", "bunx prisma migrate deploy && bun run index.ts"]
+CMD ["bun", "run", "index.ts"]
