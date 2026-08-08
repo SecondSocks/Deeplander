@@ -14,5 +14,8 @@ export const config = {
 			flash: 'deepseek-v4-flash',
 			pro: 'deepseek-v4-pro'
 		}
+	},
+	app: {
+		url: env.APP_URL
 	}
 }

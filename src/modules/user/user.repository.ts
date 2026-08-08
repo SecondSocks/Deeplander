@@ -31,4 +31,12 @@ export class UserRepository {
 			}
 		})
 	}
+
+	public async findByTelegramId(telegramId: string) {
+		return prisma.user.findUnique({
+			where: {
+				telegramId
+			}
+		})
+	}
 }

@@ -1,13 +1,11 @@
-/// <reference types="bun" />
+import { apiRouter } from './src/app/api/router'
 
 const port = Number(process.env.PORT ?? 8080)
 
 Bun.serve({
 	port,
 	hostname: '0.0.0.0',
-	fetch() {
-		return new Response('OK')
-	}
+	fetch: req => apiRouter(req)
 })
 
 const migration = Bun.spawn(['bunx', 'prisma', 'migrate', 'deploy'], {

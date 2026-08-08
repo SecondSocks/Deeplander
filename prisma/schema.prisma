@@ -24,6 +24,7 @@ model User {
   conversations    Conversation[]
   aiRequestLogs    AiRequestLog[]
   rateLimitWindows RateLimitWindow[]
+  transactions     Transaction[]
 
   @@index([telegramId])
 }
@@ -160,6 +161,32 @@ model FeatureFlag {
   key            String  @unique
   enabled        Boolean
   rolloutPercent Int     @map("rollout_percent")
+}
+
+model Transaction {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now()) @map("created_at")
+
+  provider PaymentProvider
+  amount   Int
+  currency String
+  status   TransactionStatus @default(pending)
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+
+  @@index([userId])
+}
+
+enum PaymentProvider {
+  stars
+  external
+}
+
+enum TransactionStatus {
+  pending
+  success
+  failed
 }
 
 enum UserStatus {

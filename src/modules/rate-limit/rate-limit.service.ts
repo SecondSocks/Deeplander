@@ -4,26 +4,11 @@ import {
 	RATE_LIMIT_DEFAULTS,
 	RATE_LIMIT_KEYS
 } from '../../shared/constants/rate-limit.constants'
-
-interface IRateLimitConfig {
-	key: string
-	userId: string
-	maxCount: number
-	windowMs: number
-}
-
-interface IRateLimitResult {
-	allowed: boolean
-	remaining: number
-	resetAt: Date
-}
-
-interface ITokenLimitResult {
-	allowed: boolean
-	used: number
-	limit: number
-	resetAt: Date
-}
+import type {
+	IRateLimitConfig,
+	IRateLimitResult,
+	ITokenLimitResult
+} from './rate-limit.types'
 
 export class RateLimitService {
 	constructor(
